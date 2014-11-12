@@ -47,7 +47,7 @@ static void power_hint(struct power_module *module, power_hint_t hint,
     const char *val = "preheat";
     static int bytes = 7;
 
-    if (pm->fp == 0) {
+    if (pm->fp == -1) {
         pm->fp = open("/sys/class/mpgpu/mpgpucmd", O_RDWR, 0644);
         if (DEBUG) {
             ALOGD("open file /sys/class/mpgpu/mpgpucmd,fd is %d", pm->fp);
@@ -56,7 +56,7 @@ static void power_hint(struct power_module *module, power_hint_t hint,
 
     switch (hint) {
     case POWER_HINT_INTERACTION:
-        if (pm->fp > 0) {
+        if (pm->fp >= 0) {
             int len = write(pm->fp, val, bytes);
             if (DEBUG) {
                 ALOGD("%s: write sucessfull, fd is %d\n", __FUNCTION__, pm->fp);
@@ -91,5 +91,5 @@ struct private_power_module HAL_MODULE_INFO_SYM = {
         .setInteractive = power_set_interactive,
         .powerHint = power_hint,
     },
-    .fp = 0,
+    .fp = -1,
 };

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
@@ -31,16 +32,17 @@ struct private_power_module {
     int fp;
 };
 
-static void power_init(struct power_module *module)
-{
+namespace android {
+namespace amlogic {
+
+static void init (struct power_module *module) {
 }
 
-static void power_set_interactive(struct power_module *module, int on)
-{
+static void setInteractive (struct power_module *module, int on) {
+    ALOGI("setInteractive");
 }
 
-static void power_hint(struct power_module *module, power_hint_t hint,
-                       void *data) {
+static void powerHint(struct power_module *module, power_hint_t hint, void *data) {
 
     struct private_power_module *pm = (struct private_power_module *) module;
 
@@ -72,6 +74,31 @@ static void power_hint(struct power_module *module, power_hint_t hint,
     }
 }
 
+/*
+static void setFeature (struct power_module *module, feature_t feature, int state) {
+
+}
+
+static int getPlatformLowPowerStats (struct power_module *module,
+        power_state_platform_sleep_state_t *list) {
+
+    ALOGI("getPlatformLowPowerStats");
+    return 0;
+}
+
+static ssize_t geNumberOfPlatformModes (struct power_module *module) {
+    return 0;
+}
+
+static int getVoterList (struct power_module *module, size_t *voter) {
+    return 0;
+}
+*/
+
+} // namespace amlogic
+} // namespace android
+
+
 static struct hw_module_methods_t power_module_methods = {
     .open = NULL,
 };
@@ -83,13 +110,17 @@ struct private_power_module HAL_MODULE_INFO_SYM = {
             .module_api_version = POWER_MODULE_API_VERSION_0_2,
             .hal_api_version = HARDWARE_HAL_API_VERSION,
             .id = POWER_HARDWARE_MODULE_ID,
-            .name = "Default Power HAL",
-            .author = "The Android Open Source Project",
+            .name = "AML Power HAL",
+            .author = "aml",
             .methods = &power_module_methods,
         },
-        .init = power_init,
-        .setInteractive = power_set_interactive,
-        .powerHint = power_hint,
+        .init = android::amlogic::init,
+        .setInteractive = android::amlogic::setInteractive,
+        .powerHint = android::amlogic::powerHint,
+        //.setFeature = android::amlogic::setFeature,
+        //.get_platform_low_power_stats = android::amlogic::getPlatformLowPowerStats,
+        //.get_number_of_platform_modes = android::amlogic::geNumberOfPlatformModes,
+        //.get_voter_list = android::amlogic::getVoterList,
     },
     .fp = -1,
 };

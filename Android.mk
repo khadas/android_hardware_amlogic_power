@@ -16,10 +16,15 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK),OK)
+LOCAL_PROPRIETARY_MODULE := true
+endif
+
 LOCAL_MODULE := power.amlogic
 LOCAL_MODULE_RELATIVE_PATH := hw
-LOCAL_SRC_FILES := power.c
+LOCAL_SRC_FILES := power.cpp
 LOCAL_SHARED_LIBRARIES := liblog
 LOCAL_MODULE_TAGS := optional
+LOCAL_CFLAGS := -Wno-unused-parameter
 
 include $(BUILD_SHARED_LIBRARY)

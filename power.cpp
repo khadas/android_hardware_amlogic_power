@@ -25,11 +25,15 @@
 
 #include <hardware/hardware.h>
 #include <hardware/power.h>
-#define DEBUG 0
+#define DEBUG 1
+
+#define MP_GPU_CMD                      "/sys/class/mpgpu/mpgpucmd"
+#define EARLY_SUSPEND_TRIGGER           "/sys/power/early_suspend_trigger"
 
 struct private_power_module {
     power_module_t base;
-    int fp;
+    int gpuFp;
+    int suspendFp;
 };
 
 namespace android {
@@ -39,7 +43,24 @@ static void init (struct power_module *module) {
 }
 
 static void setInteractive (struct power_module *module, int on) {
-    ALOGI("setInteractive");
+    ALOGI("setInteractive ineractive:%s", (on==1)?"yes":"no");
+
+    struct private_power_module *pm = (struct private_power_module *) module;
+    if (pm->suspendFp < 0) {
+        pm->suspendFp = open(EARLY_SUSPEND_TRIGGER, O_RDWR, 0644);
+        if (pm->suspendFp < 0) {
+            ALOGE("open %s fail, %s", EARLY_SUSPEND_TRIGGER, strerror(errno));
+            return;
+        }
+    }
+
+    //resume
+    if (1 == on) {
+        write(pm->suspendFp, "0", 1);
+    }
+    else {
+        write(pm->suspendFp, "1", 1);
+    }
 }
 
 static void powerHint(struct power_module *module, power_hint_t hint, void *data) {
@@ -49,19 +70,20 @@ static void powerHint(struct power_module *module, power_hint_t hint, void *data
     const char *val = "preheat";
     static int bytes = 7;
 
-    if (pm->fp == -1) {
-        pm->fp = open("/sys/class/mpgpu/mpgpucmd", O_RDWR, 0644);
-        if (DEBUG) {
-            ALOGD("open file /sys/class/mpgpu/mpgpucmd,fd is %d", pm->fp);
+    if (pm->gpuFp < 0) {
+        pm->gpuFp = open(MP_GPU_CMD, O_RDWR, 0644);
+        if (pm->gpuFp < 0) {
+            ALOGE("open %s fail, %s", MP_GPU_CMD, strerror(errno));
+            return;
         }
     }
 
     switch (hint) {
     case POWER_HINT_INTERACTION:
-        if (pm->fp >= 0) {
-            int len = write(pm->fp, val, bytes);
+        if (pm->gpuFp >= 0) {
+            int len = write(pm->gpuFp, val, bytes);
             if (DEBUG) {
-                ALOGD("%s: write sucessfull, fd is %d\n", __FUNCTION__, pm->fp);
+                ALOGD("%s: write sucessfull, fd is %d\n", __FUNCTION__, pm->gpuFp);
             }
 
             if (len != bytes)
@@ -122,5 +144,6 @@ struct private_power_module HAL_MODULE_INFO_SYM = {
         //.get_number_of_platform_modes = android::amlogic::geNumberOfPlatformModes,
         //.get_voter_list = android::amlogic::getVoterList,
     },
-    .fp = -1,
+    .gpuFp = -1,
+    .suspendFp = -1,
 };

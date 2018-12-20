@@ -24,13 +24,20 @@ LOCAL_C_INCLUDES += \
 	hardware/libhardware/include \
 	system/core/libcutils/include \
 	system/core/libutils/include \
-	system/core/libsystem/include
+	system/core/libsystem/include \
+	frameworks/native/libs/binder/include \
+	vendor/amlogic/common/frameworks/services/hdmicec/binder/
+
 
 LOCAL_MODULE := power.amlogic
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_SRC_FILES := power.cpp
-LOCAL_SHARED_LIBRARIES := liblog
-LOCAL_MODULE_TAGS := optional
+LOCAL_SHARED_LIBRARIES := \
+  liblog \
+  libcutils \
+  vendor.amlogic.hardware.hdmicec@1.0 \
+  libhdmicec
+LLOCAL_MODULE_TAGS := optional
 LOCAL_CFLAGS := -Wno-unused-parameter
 
 include $(BUILD_SHARED_LIBRARY)

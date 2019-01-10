@@ -34,10 +34,13 @@ LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_SRC_FILES := power.cpp
 LOCAL_SHARED_LIBRARIES := \
   liblog \
-  libcutils \
-  vendor.amlogic.hardware.hdmicec@1.0 \
-  libhdmicec
+  libcutils
+
+ifeq ($(strip $(BOARD_HAVE_CEC_HIDL_SERVICE)),true)
+    LOCAL_SHARED_LIBRARIES += vendor.amlogic.hardware.hdmicec@1.0 libhdmicec
+    LOCAL_CFLAGS += -DBOARD_HAVE_CEC_HIDL_SERVICE
+endif
 LLOCAL_MODULE_TAGS := optional
-LOCAL_CFLAGS := -Wno-unused-parameter
+LOCAL_CFLAGS += -Wno-unused-parameter
 
 include $(BUILD_SHARED_LIBRARY)

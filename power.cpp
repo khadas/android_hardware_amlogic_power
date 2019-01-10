@@ -26,7 +26,9 @@
 
 #include <hardware/hardware.h>
 #include <hardware/power.h>
+#ifdef BOARD_HAVE_CEC_HIDL_SERVICE
 #include <HdmiCecHidlClient.h>
+#endif
 #include <cutils/properties.h>
 #define DEBUG 0
 
@@ -58,7 +60,7 @@ static void setInteractive (struct power_module *module, int on) {
             return;
         }
     }
-
+    #ifdef BOARD_HAVE_CEC_HIDL_SERVICE
     if (0 == on) {
         char value[PROPERTY_VALUE_MAX] = {0};
         const char * split = ",";
@@ -85,6 +87,7 @@ static void setInteractive (struct power_module *module, int on) {
         }
         delete mHdmiCecHidlClient;
     }
+    #endif
     //resume
     if (1 == on) {
         write(pm->suspendFp, "0", 1);
